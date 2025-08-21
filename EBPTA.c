@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <math.h> //for exp
-
+#include <stdlib.h>
 
 double sigmoid(double x) 
 {return 1.0 / (1.0 + exp(-x));}
@@ -166,4 +166,55 @@ void train(double **W, double **b, const double **X, const double **T, int num_s
     for (int l = 0; l < num_layers; l++) {
         free(outputs[l]);
     }
+}
+
+int main()
+{
+    const int num_samples = 4;
+    const int input_size = 2;
+    const int num_layers = 2;
+    const int layer_sizes[2] = {2, 1}; // 2 hidden, 1 output
+
+    double X_data[4][2] = {
+        {0, 0},
+        {0, 1},
+        {1, 0},
+        {1, 1}
+    };
+    const double *X[4] = { X_data[0], X_data[1], X_data[2], X_data[3] };
+
+    double T_data[4][1] = {
+        {0},
+        {1},
+        {1},
+        {0}
+    };
+    const double *T[4] = { T_data[0], T_data[1], T_data[2], T_data[3] };
+
+    double W0[2 * 2]; 
+    double b0[2];
+    double W1[1 * 2]; 
+    double b1[1];
+
+   
+    for (int i = 0; i < 4; i++) W0[i] = 0;
+    for (int i = 0; i < 2; i++) b0[i] = 0;
+    for (int i = 0; i < 2; i++) W1[i] = 0;
+    b1[0] = 0;
+
+    double *W[2] = { W0, W1 };
+    double *b[2] = { b0, b1 };
+
+    train(W, b, X, T, num_samples, input_size, layer_sizes, num_layers, 0.5, 5000);
+
+    double output_hidden[2];
+    double output_final[1];
+    double *outputs[2] = { output_hidden, output_final };
+
+    for (int i = 0; i < num_samples; i++) {
+        forwardPassN(X[i], input_size, (const double**)W, (const double**)b, layer_sizes, num_layers, outputs);
+        printf("Input: %.0f %.0f, Predicted: %.4f, Target: %.0f\n", X[i][0], X[i][1], outputs[1][0], T[i][0]);
+    }
+
+    return 0;
 }
